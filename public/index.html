@@ -41,7 +41,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="./styles.css?v=20261116-addr" />
+  <link rel="stylesheet" href="./styles.css?v=20261116-mobilemap" />
 </head>
 <body>
   <!-- Top Live Availability & Trust Bar -->
@@ -52,9 +52,9 @@
         <span id="openingsBannerText">Openings Now — Enrolling Infants, Toddlers &amp; Preschoolers (Ages 4 Mos – 4 Yrs)</span>
       </div>
       <div class="topbar__meta">
-        <a href="tel:4152904736">📞 415-290-4736</a>
+        <a href="tel:4152904736" class="topbar__keep-mobile">📞 415-290-4736</a>
         <span class="divider">•</span>
-        <a href="https://www.google.com/maps/search/?api=1&amp;query=533+Rollins+Rd%2C+Burlingame%2C+CA+94010" target="_blank" rel="noopener noreferrer">📍 533 Rollins Rd, Burlingame, CA 94010</a>
+        <a href="#location" class="topbar__keep-mobile">📍 533 Rollins Rd, Burlingame</a>
         <span class="divider">•</span>
         <a href="https://www.ccld.dss.ca.gov/carefacilitysearch/" target="_blank" rel="noopener noreferrer">CA License #414004784</a>
         <span class="divider">•</span>
@@ -90,6 +90,7 @@
         <a href="#rhythm">Daily Rhythm</a>
         <a href="#gallery">Classroom</a>
         <a href="#reviews">Reviews</a>
+        <a href="#location">Location &amp; Map</a>
         <a href="#connect" data-switch-tab="inquiry">Inquire / Tour</a>
         <a href="#connect" data-switch-tab="portal" class="mobile-only-link">Family Register / Sign In</a>
       </nav>
@@ -472,6 +473,57 @@
       </div>
     </section>
 
+    <!-- Full-Width Mobile & Desktop Interactive Google Map Section -->
+    <section class="section" id="location">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-kicker">Visit Us in Burlingame</span>
+          <h2>533 Rollins Rd, Burlingame, CA 94010</h2>
+          <p>
+            Conveniently located in Burlingame’s Oak Grove Manor area near the Bay Trail and 101/Millbrae corridor. Pinch to zoom on mobile or tap below for turn-by-turn directions!
+          </p>
+        </div>
+
+        <div class="location-card">
+          <div class="location-map-embed">
+            <iframe
+              title="Interactive Google Map for Home Montessori Play-School at 533 Rollins Rd, Burlingame, CA 94010"
+              src="https://maps.google.com/maps?q=533+Rollins+Rd,+Burlingame,+CA+94010&amp;t=&amp;z=15&amp;ie=UTF8&amp;iwloc=&amp;output=embed"
+              allowfullscreen
+              referrerpolicy="no-referrer-when-downgrade"
+            ></iframe>
+          </div>
+          <div class="location-bar">
+            <div class="location-bar__info">
+              <strong>📍 Home Montessori Play-School — 533 Rollins Rd, Burlingame, CA 94010</strong>
+              <span>Open Mon–Fri 8:30 AM – 4:30 PM · In-Person Tours: 4:30 PM – 5:00 PM Only</span>
+            </div>
+            <div class="location-bar__actions">
+              <a
+                href="https://www.google.com/maps/dir/?api=1&amp;destination=533+Rollins+Rd,+Burlingame,+CA+94010"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="btn btn--primary btn--sm"
+              >
+                🧭 Google Maps Directions
+              </a>
+              <a
+                href="https://maps.apple.com/?daddr=533+Rollins+Rd,+Burlingame,+CA+94010"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="btn btn--secondary btn--sm"
+              >
+                🗺️ Open in Apple Maps
+              </a>
+              <a href="tel:4152904736" class="btn btn--outline btn--sm">
+                📞 Call 415-290-4736
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- Registration, Online Enrollment & Direct Email Inquiry Hub -->
     <section class="section section--connect" id="connect">
       <div class="container">
@@ -530,7 +582,7 @@
                 <iframe
                   title="Map of Home Montessori Play-School at 533 Rollins Rd, Burlingame, CA 94010"
                   src="https://maps.google.com/maps?q=533+Rollins+Rd,+Burlingame,+CA+94010&amp;t=&amp;z=15&amp;ie=UTF8&amp;iwloc=&amp;output=embed"
-                  loading="lazy"
+                  allowfullscreen
                   referrerpolicy="no-referrer-when-downgrade"
                 ></iframe>
               </div>
@@ -1081,6 +1133,6 @@
     </div>
   </div>
 
-  <script src="./app.js?v=20261116-addr"></script>
+  <script src="./app.js?v=20261116-mobilemap"></script>
 </body>
 </html>
