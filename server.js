@@ -28,7 +28,6 @@ try {
 }
 
 const PORT = Number(process.env.PORT || 3000);
-const OWNER_PIN = String(process.env.OWNER_PIN || '4784');
 const DATA_DIR = path.join(__dirname, 'data');
 const PUBLIC_DIR = path.join(__dirname, 'public');
 
@@ -41,6 +40,10 @@ const FILES = {
 
 // Active parent sessions in memory (token -> email)
 const sessions = new Map();
+
+// Ephemeral one-time Owner Portal OTP & short-lived single-visit admin sessions
+let adminOtp = { hash: null, expiresAt: 0, attempts: 0 };
+const adminSessions = new Map();
 
 async function ensureDataFiles() {
   await fs.mkdir(DATA_DIR, { recursive: true });
@@ -500,13 +503,126 @@ async function handleApi(req, res, pathname) {
     });
   }
 
-  // Owner Admin Endpoints (PIN-protected)
+  // Owner Admin Endpoints (One-Time Email PIN Protected — Zero Static PIN)
+  if (pathname === '/api/admin/request-otp' && req.method === 'POST') {
+    const body = await parseBody(req);
+    const rawIdentity = String(body.identity || '').trim().toLowerCase();
+    const digits = rawIdentity.replace(/\D/g, '');
+    const ownerEmailLower = String(config.ownerEmail || 'homemontessorischool.missleah@gmail.com').toLowerCase();
+    const ownerPhoneDigits = String(config.phone || '415-290-4736').replace(/\D/g, '');
+
+    const emailMatch = rawIdentity === ownerEmailLower;
+    const phoneMatch = ownerPhoneDigits.length >= 10 && digits.endsWith(ownerPhoneDigits.slice(-10));
+
+    if (!emailMatch && !phoneMatch) {
+      return sendJson(res, 403, {
+        ok: false,
+        error: 'Access denied. Identity does not match Miss Leah’s registered owner email or phone number.',
+      });
+    }
+
+    const otpCode = String(crypto.randomInt(100000, 1000000));
+    adminOtp = {
+      hash: crypto.createHash('sha256').update(otpCode).digest('hex'),
+      expiresAt: Date.now() + 10 * 60 * 1000,
+      attempts: 0,
+    };
+
+    const smtpResult = await sendSmtpEmailIfConfigured({
+      to: config.ownerEmail,
+      replyTo: config.ownerEmail,
+      subject: `🔐 Owner Portal PIN: ${otpCode} — Home Montessori Play-School`,
+      text: `Your one-time 6-digit Owner Portal security PIN is: ${otpCode}\n\nThis code is valid for 10 minutes and can only be used once.`,
+      html: `
+        <div style="font-family:sans-serif;max-width:520px;padding:24px;background:#F5F4FB;border-radius:14px;color:#172038;border:1px solid #DDD6FE;">
+          <h2 style="margin:0 0 8px;color:#0F766E;">Owner Portal One-Time PIN</h2>
+          <p style="margin:0 0 16px;">Enter this single-use 6-digit security code to open your Home Montessori Play-School Owner Portal:</p>
+          <div style="font-size:32px;font-weight:800;letter-spacing:6px;padding:14px 20px;background:#FFFFFF;border-radius:10px;border:2px solid #7C3AED;text-align:center;color:#4C1D95;">
+            ${otpCode}
+          </div>
+          <p style="margin:14px 0 0;font-size:13px;color:#4E5B78;">Expires in 10 minutes. If you did not request this code, you can safely ignore this email.</p>
+        </div>
+      `,
+    });
+
+    let needsActivation = false;
+    if (!smtpResult.sentViaSmtp) {
+      try {
+        const fsRes = await fetch(`https://formsubmit.co/ajax/${encodeURIComponent(config.ownerEmail)}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+            Origin: 'https://home-montessori-playschool.github.io',
+            Referer: 'https://home-montessori-playschool.github.io/',
+          },
+          body: JSON.stringify({
+            _subject: `🔐 Owner Portal PIN: ${otpCode} — Home Montessori Play-School`,
+            _template: 'table',
+            _captcha: 'false',
+            One_Time_Security_PIN: otpCode,
+            Valid_For: '10 minutes (single-use)',
+            Portal: 'Home Montessori Play-School Owner Portal',
+          }),
+        });
+        const fsJson = await fsRes.json().catch(() => ({}));
+        if (String(fsJson.message || '').toLowerCase().includes('activation')) {
+          needsActivation = true;
+        }
+      } catch {
+        // Handled gracefully
+      }
+    }
+
+    return sendJson(res, 200, {
+      ok: true,
+      maskedEmail: config.ownerEmail,
+      needsActivation,
+    });
+  }
+
+  if (pathname === '/api/admin/verify-otp' && req.method === 'POST') {
+    const body = await parseBody(req);
+    const code = String(body.code || '').trim();
+
+    if (!adminOtp.hash || Date.now() > adminOtp.expiresAt) {
+      adminOtp = { hash: null, expiresAt: 0, attempts: 0 };
+      return sendJson(res, 401, { ok: false, error: 'This security code has expired. Please request a new 6-digit PIN.' });
+    }
+
+    adminOtp.attempts += 1;
+    if (adminOtp.attempts > 5) {
+      adminOtp = { hash: null, expiresAt: 0, attempts: 0 };
+      return sendJson(res, 429, { ok: false, error: 'Too many incorrect attempts. Please request a new 6-digit PIN.' });
+    }
+
+    const candidateHash = crypto.createHash('sha256').update(code).digest('hex');
+    if (candidateHash !== adminOtp.hash) {
+      return sendJson(res, 401, { ok: false, error: 'Incorrect 6-digit PIN. Please check your email and try again.' });
+    }
+
+    // Strictly single-use OTP
+    adminOtp = { hash: null, expiresAt: 0, attempts: 0 };
+    const adminToken = crypto.randomBytes(24).toString('hex');
+    adminSessions.set(adminToken, Date.now() + 15 * 60 * 1000);
+
+    return sendJson(res, 200, { ok: true, adminToken });
+  }
+
+  if (pathname === '/api/admin/logout' && req.method === 'POST') {
+    const token = String(req.headers['x-admin-token'] || '').trim();
+    if (token) adminSessions.delete(token);
+    return sendJson(res, 200, { ok: true });
+  }
+
   if (pathname.startsWith('/api/admin/')) {
-    const pin = String(req.headers['x-owner-pin'] || '').trim();
-    if (pin !== OWNER_PIN) {
+    const token = String(req.headers['x-admin-token'] || '').trim();
+    const exp = adminSessions.get(token);
+    if (!token || !exp || Date.now() > exp) {
+      if (token) adminSessions.delete(token);
       return sendJson(res, 401, {
         ok: false,
-        error: 'Incorrect Owner PIN. (Default PIN is 4784 — last 4 digits of CA License #414004784.)',
+        error: 'Your Owner Portal session has locked. Please verify with a new 6-digit email PIN.',
       });
     }
 

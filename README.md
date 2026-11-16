@@ -7,7 +7,7 @@ A modern, mobile-responsive website and client portal tailored for **Home Montes
 - **Direct Email Inquiry & Tour Request Form:** Parents can book morning/afternoon tours or ask questions directly without third-party listing middlemen.
 - **4-Step Online Child Enrollment Application:** Structured enrollment wizard collecting child details, program tier (`$2,650/mo` Full-Time, `$2,000/mo` Part-Time, After Care, Drop-In), family/emergency contacts, allergies, feeding/nap schedules, and potty-training stage—with printable receipts.
 - **New Family Account Registration & Portal:** Prospective and current families can register an account, auto-fill forms, and track submitted inquiries and enrollment applications.
-- **Owner Portal & Email Settings:** Click **Owner Portal & Email Settings** in the website footer (default PIN: `4784`) to view all submissions, update statuses, and set your exact business email address & phone number.
+- **Owner Portal & Email Settings:** Click **Owner Portal & Email Settings** in the website footer—protected by a single-use **6-digit one-time security PIN** emailed exclusively to Miss Leah (`homemontessorischool.missleah@gmail.com`) every time the portal is opened.
 
 ## Quick Start
 
@@ -20,5 +20,5 @@ npm start
 Then open **http://localhost:3000** in your browser.
 
 ## Connecting Your Email Inbox
-1. **Zero-Config Email Delivery (Default):** Open the site, scroll to the footer, click **Owner Portal & Email Settings** (PIN `4784`), and enter your real email address (e.g., your Gmail or domain email). On the first parent inquiry or enrollment submission, **FormSubmit.co** sends you a one-click activation email—confirm once and all future inquiries & enrollment packets arrive formatted in your inbox automatically.
+1. **Zero-Config Email Delivery (Default):** Inquiries, enrollment packets, and single-use 6-digit Owner Portal security PINs are delivered automatically via **FormSubmit.co** to `homemontessorischool.missleah@gmail.com`.
 2. **Direct SMTP (Optional):** Copy `.env.example` to `.env` and add your Gmail App Password or SMTP credentials (`SMTP_USER`, `SMTP_PASS`) for direct server-side email delivery via `nodemailer`.

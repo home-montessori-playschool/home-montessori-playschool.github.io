@@ -41,7 +41,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="./styles.css?v=20261116-mobilemap" />
+  <link rel="stylesheet" href="./styles.css?v=20261116-otp" />
 </head>
 <body>
   <!-- Top Live Availability & Trust Bar -->
@@ -997,23 +997,70 @@
         <button type="button" class="modal-close" id="closeOwnerModalBtn" aria-label="Close modal">✕</button>
       </div>
 
-      <!-- PIN Gate -->
-      <form id="ownerPinForm" class="modern-form">
-        <p>Enter your Owner PIN to view parent registrations, enrollment applications, inquiries, and configure the email address where website submissions are delivered.</p>
-        <div class="form-row form-row--2">
-          <div class="form-group">
-            <label for="ownerPinInput">Owner PIN (Default: 4784)</label>
-            <input type="password" id="ownerPinInput" placeholder="Enter PIN" required />
+      <!-- Two-Step One-Time Email PIN Gate (No Static PIN) -->
+      <div id="ownerAuthGate">
+        <!-- Step 1: Request Fresh One-Time 6-Digit PIN -->
+        <form id="ownerRequestOtpForm" class="modern-form">
+          <p>
+            Access is restricted exclusively to <strong>Miss Leah</strong>. Every time you enter the Owner Portal, a brand-new single-use <strong>6-digit security PIN</strong> is sent directly to your registered owner email (<strong>homemontessorischool.missleah@gmail.com</strong>).
+          </p>
+          <div class="form-row form-row--2">
+            <div class="form-group">
+              <label for="ownerIdentityInput">Confirm Your Owner Email or Phone *</label>
+              <input
+                type="text"
+                id="ownerIdentityInput"
+                placeholder="homemontessorischool.missleah@gmail.com or 415-290-4736"
+                autocomplete="off"
+                required
+              />
+            </div>
+            <div class="form-group form-group--align-end">
+              <button type="submit" class="btn btn--primary" id="sendOtpBtn">
+                🔐 Send 6-Digit PIN to My Email
+              </button>
+            </div>
           </div>
-          <div class="form-group form-group--align-end">
-            <button type="submit" class="btn btn--primary">Unlock Owner Portal</button>
+          <div id="ownerRequestError" class="form-alert hidden"></div>
+        </form>
+
+        <!-- Step 2: Verify 6-Digit One-Time PIN -->
+        <form id="ownerVerifyOtpForm" class="modern-form hidden">
+          <div id="otpDeliveryNotice" class="otp-notice-box"></div>
+          <div class="form-row form-row--2">
+            <div class="form-group">
+              <label for="ownerOtpInput">Enter 6-Digit One-Time PIN *</label>
+              <input
+                type="text"
+                id="ownerOtpInput"
+                inputmode="numeric"
+                pattern="[0-9]{6}"
+                maxlength="6"
+                placeholder="6-digit code from your email"
+                autocomplete="one-time-code"
+                required
+              />
+            </div>
+            <div class="form-group form-group--align-end">
+              <button type="submit" class="btn btn--primary" id="verifyOtpBtn">
+                Verify &amp; Enter Portal
+              </button>
+            </div>
           </div>
-        </div>
-        <div id="ownerPinError" class="form-alert hidden"></div>
-      </form>
+          <div id="ownerPinError" class="form-alert hidden"></div>
+          <div class="otp-resend-row">
+            <button type="button" class="btn btn--ghost btn--sm" id="resendOtpBtn">Resend New 6-Digit PIN</button>
+            <span class="small-muted" style="margin:0;">Code expires in 10 minutes and locks automatically when you close this window.</span>
+          </div>
+        </form>
+      </div>
 
       <!-- Unlocked Admin Content -->
       <div id="ownerAdminContent" class="hidden">
+        <div class="admin-lock-bar">
+          <span>🔓 Verified Session Active for <strong>Miss Leah</strong> (locks automatically upon closing)</span>
+          <button type="button" class="btn btn--ghost btn--sm" id="lockOwnerPortalBtn">🔒 Lock Portal Now</button>
+        </div>
         <form id="ownerSettingsForm" class="admin-settings-box modern-form">
           <h4>Destination Email &amp; Live Website Settings</h4>
           <p class="small-muted">All parent inquiries and enrollment applications are sent directly to the email address below.</p>
@@ -1133,6 +1180,6 @@
     </div>
   </div>
 
-  <script src="./app.js?v=20261116-mobilemap"></script>
+  <script src="./app.js?v=20261116-otp"></script>
 </body>
 </html>

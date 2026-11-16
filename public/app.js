@@ -24,9 +24,23 @@
     config: { ...DEFAULT_CONFIG },
     token: localStorage.getItem('hmp_token') || '',
     parent: null,
-    ownerPin: '',
+    adminToken: '',
+    lastVerifiedIdentity: '',
     staticMode: false,
   };
+
+  // Ephemeral one-time Owner Portal OTP state (never persisted in localStorage; wiped on close)
+  let staticOtpHash = null;
+  let staticOtpExpires = 0;
+  let staticOtpAttempts = 0;
+  let staticAdminSession = '';
+  let staticAdminExpires = 0;
+
+  async function sha256Hex(str) {
+    const data = new TextEncoder().encode(str);
+    const digest = await crypto.subtle.digest('SHA-256', data);
+    return Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, '0')).join('');
+  }
 
   const $ = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
@@ -81,10 +95,10 @@
         state.staticMode = true;
       }
     }
-    return handleStaticApi(path, options);
+    return await handleStaticApi(path, options);
   }
 
-  function handleStaticApi(path, options = {}) {
+  async function handleStaticApi(path, options = {}) {
     const method = (options.method || 'GET').toUpperCase();
     const body = options.body ? JSON.parse(options.body) : {};
     const headers = options.headers || {};
@@ -205,10 +219,94 @@
       };
     }
 
+    if (path === '/api/admin/request-otp' && method === 'POST') {
+      const rawIdentity = String(body.identity || '').trim().toLowerCase();
+      const digits = rawIdentity.replace(/\D/g, '');
+      const ownerEmailLower = String(cfg.ownerEmail || 'homemontessorischool.missleah@gmail.com').toLowerCase();
+      const ownerPhoneDigits = String(cfg.phone || '415-290-4736').replace(/\D/g, '');
+
+      const emailMatch = rawIdentity === ownerEmailLower;
+      const phoneMatch = ownerPhoneDigits.length >= 10 && digits.endsWith(ownerPhoneDigits.slice(-10));
+
+      if (!emailMatch && !phoneMatch) {
+        return {
+          ok: false,
+          error: 'Access denied. Identity does not match Miss Leah’s registered owner email or phone number.',
+        };
+      }
+
+      const rand = new Uint32Array(1);
+      crypto.getRandomValues(rand);
+      const otpCode = String(100000 + (rand[0] % 900000));
+      staticOtpHash = await sha256Hex(otpCode);
+      staticOtpExpires = Date.now() + 10 * 60 * 1000;
+      staticOtpAttempts = 0;
+
+      let needsActivation = false;
+      try {
+        const fsRes = await fetch(`https://formsubmit.co/ajax/${encodeURIComponent(cfg.ownerEmail)}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+          body: JSON.stringify({
+            _subject: `🔐 Owner Portal PIN: ${otpCode} — Home Montessori Play-School`,
+            _template: 'table',
+            _captcha: 'false',
+            One_Time_Security_PIN: otpCode,
+            Valid_For: '10 minutes (single-use)',
+            Portal: 'Home Montessori Play-School — Miss Leah Owner Portal',
+            Requested_At: new Date().toLocaleString(),
+          }),
+        });
+        const fsJson = await fsRes.json().catch(() => ({}));
+        if (String(fsJson.message || '').toLowerCase().includes('activation')) {
+          needsActivation = true;
+        }
+      } catch {
+        return { ok: false, error: 'Could not reach email service. Please check your internet connection and try again.' };
+      }
+
+      return { ok: true, maskedEmail: cfg.ownerEmail, needsActivation };
+    }
+
+    if (path === '/api/admin/verify-otp' && method === 'POST') {
+      const code = String(body.code || '').trim();
+      if (!staticOtpHash || Date.now() > staticOtpExpires) {
+        staticOtpHash = null;
+        return { ok: false, error: 'This security code has expired. Please click Resend New 6-Digit PIN.' };
+      }
+      staticOtpAttempts += 1;
+      if (staticOtpAttempts > 5) {
+        staticOtpHash = null;
+        return { ok: false, error: 'Too many incorrect attempts. Please request a new 6-digit PIN.' };
+      }
+      const candidateHash = await sha256Hex(code);
+      if (candidateHash !== staticOtpHash) {
+        return { ok: false, error: 'Incorrect 6-digit PIN. Please check your email and try again.' };
+      }
+      // Strictly single-use
+      staticOtpHash = null;
+      const randBytes = new Uint8Array(18);
+      crypto.getRandomValues(randBytes);
+      staticAdminSession = Array.from(randBytes).map(b => b.toString(16).padStart(2, '0')).join('');
+      staticAdminExpires = Date.now() + 15 * 60 * 1000;
+      return { ok: true, adminToken: staticAdminSession };
+    }
+
+    if (path === '/api/admin/logout' && method === 'POST') {
+      staticAdminSession = '';
+      staticAdminExpires = 0;
+      staticOtpHash = null;
+      return { ok: true };
+    }
+
     if (path.startsWith('/api/admin/')) {
-      const pin = String(headers['x-owner-pin'] || '').trim();
-      if (pin !== '4784') {
-        return { ok: false, error: 'Incorrect Owner PIN. (Default PIN is 4784.)' };
+      const token = String(headers['x-admin-token'] || '').trim();
+      if (!token || !staticAdminSession || token !== staticAdminSession || Date.now() > staticAdminExpires) {
+        staticAdminSession = '';
+        return { ok: false, error: 'Owner Portal is locked. Please request a new one-time 6-digit PIN.' };
       }
       if (method === 'GET' && path === '/api/admin/overview') {
         return {
@@ -847,21 +945,121 @@
     });
   }
 
-  // Owner Admin Modal & Settings
+  // Owner Admin Modal & Every-Entry One-Time Email PIN Verification
   const ownerModal = $('#ownerModal');
+
+  async function lockAndResetOwnerModal(closeModal = true) {
+    if (state.adminToken) {
+      const prevToken = state.adminToken;
+      state.adminToken = '';
+      apiCall('/api/admin/logout', {
+        method: 'POST',
+        headers: { 'x-admin-token': prevToken },
+      }).catch(() => {});
+    }
+    $('#ownerAdminContent')?.classList.add('hidden');
+    $('#ownerAuthGate')?.classList.remove('hidden');
+    $('#ownerRequestOtpForm')?.classList.remove('hidden');
+    $('#ownerVerifyOtpForm')?.classList.add('hidden');
+    $('#ownerRequestError')?.classList.add('hidden');
+    $('#ownerPinError')?.classList.add('hidden');
+    if ($('#ownerOtpInput')) $('#ownerOtpInput').value = '';
+    if (closeModal && ownerModal) {
+      ownerModal.classList.add('hidden');
+    }
+  }
+
   $('#openOwnerModalBtn')?.addEventListener('click', () => {
-    ownerModal.classList.remove('hidden');
+    lockAndResetOwnerModal(false);
+    ownerModal?.classList.remove('hidden');
+    $('#ownerIdentityInput')?.focus();
   });
+
   $('#closeOwnerModalBtn')?.addEventListener('click', () => {
-    ownerModal.classList.add('hidden');
+    lockAndResetOwnerModal(true);
   });
+
+  $('#lockOwnerPortalBtn')?.addEventListener('click', () => {
+    lockAndResetOwnerModal(true);
+  });
+
   ownerModal?.addEventListener('click', e => {
-    if (e.target === ownerModal) ownerModal.classList.add('hidden');
+    if (e.target === ownerModal) lockAndResetOwnerModal(true);
+  });
+
+  async function sendFreshOwnerOtp(identityValue) {
+    const reqErr = $('#ownerRequestError');
+    const pinErr = $('#ownerPinError');
+    reqErr?.classList.add('hidden');
+    pinErr?.classList.add('hidden');
+
+    const sendBtn = $('#sendOtpBtn');
+    const resendBtn = $('#resendOtpBtn');
+    if (sendBtn) {
+      sendBtn.disabled = true;
+      sendBtn.textContent = 'Sending 6-Digit PIN...';
+    }
+    if (resendBtn) {
+      resendBtn.disabled = true;
+      resendBtn.textContent = 'Sending...';
+    }
+
+    try {
+      const data = await apiCall('/api/admin/request-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ identity: identityValue }),
+      });
+
+      if (!data.ok) {
+        throw new Error(data.error || 'Could not send security code.');
+      }
+
+      state.lastVerifiedIdentity = identityValue;
+      const notice = $('#otpDeliveryNotice');
+      if (notice) {
+        notice.innerHTML = data.needsActivation
+          ? `<strong>One-Time Domain Activation Needed First:</strong> Open <strong>${escapeHtml(data.maskedEmail)}</strong> (check Spam/Promotions too) and click <strong>“Activate Form”</strong> in the email from FormSubmit once—then click <strong>Resend New 6-Digit PIN</strong> below to receive your 6-digit code!`
+          : `✓ We just sent a fresh 6-digit one-time PIN to <strong>${escapeHtml(data.maskedEmail)}</strong>! Check your Gmail inbox (or phone Gmail notification) and enter the 6-digit code below.`;
+      }
+
+      $('#ownerRequestOtpForm')?.classList.add('hidden');
+      $('#ownerVerifyOtpForm')?.classList.remove('hidden');
+      if ($('#ownerOtpInput')) {
+        $('#ownerOtpInput').value = '';
+        $('#ownerOtpInput').focus();
+      }
+    } catch (err) {
+      if (reqErr) {
+        reqErr.textContent = err.message;
+        reqErr.classList.remove('hidden');
+      }
+    } finally {
+      if (sendBtn) {
+        sendBtn.disabled = false;
+        sendBtn.textContent = '🔐 Send 6-Digit PIN to My Email';
+      }
+      if (resendBtn) {
+        resendBtn.disabled = false;
+        resendBtn.textContent = 'Resend New 6-Digit PIN';
+      }
+    }
+  }
+
+  $('#ownerRequestOtpForm')?.addEventListener('submit', async e => {
+    e.preventDefault();
+    const identity = $('#ownerIdentityInput')?.value.trim() || '';
+    await sendFreshOwnerOtp(identity);
+  });
+
+  $('#resendOtpBtn')?.addEventListener('click', async () => {
+    const identity = state.lastVerifiedIdentity || $('#ownerIdentityInput')?.value.trim() || '';
+    await sendFreshOwnerOtp(identity);
   });
 
   async function loadAdminOverview() {
     const data = await apiCall('/api/admin/overview', {
-      headers: { 'x-owner-pin': state.ownerPin },
+      headers: { 'x-admin-token': state.adminToken },
     });
     if (!data.ok) throw new Error(data.error || 'Unauthorized');
 
@@ -927,7 +1125,7 @@
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
-            'x-owner-pin': state.ownerPin,
+            'x-admin-token': state.adminToken,
           },
           body: JSON.stringify({
             collection: sel.dataset.statusUpdate,
@@ -939,19 +1137,40 @@
     });
   }
 
-  $('#ownerPinForm')?.addEventListener('submit', async e => {
+  $('#ownerVerifyOtpForm')?.addEventListener('submit', async e => {
     e.preventDefault();
     const errEl = $('#ownerPinError');
-    errEl.classList.add('hidden');
-    state.ownerPin = $('#ownerPinInput').value.trim();
+    errEl?.classList.add('hidden');
+    const code = $('#ownerOtpInput')?.value.trim() || '';
+
+    const verifyBtn = $('#verifyOtpBtn');
+    if (verifyBtn) {
+      verifyBtn.disabled = true;
+      verifyBtn.textContent = 'Verifying...';
+    }
 
     try {
+      const verifyData = await apiCall('/api/admin/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code }),
+      });
+      if (!verifyData.ok) throw new Error(verifyData.error || 'Verification failed.');
+
+      state.adminToken = verifyData.adminToken;
       await loadAdminOverview();
-      $('#ownerPinForm').classList.add('hidden');
-      $('#ownerAdminContent').classList.remove('hidden');
+      $('#ownerAuthGate')?.classList.add('hidden');
+      $('#ownerAdminContent')?.classList.remove('hidden');
     } catch (err) {
-      errEl.textContent = err.message;
-      errEl.classList.remove('hidden');
+      if (errEl) {
+        errEl.textContent = err.message;
+        errEl.classList.remove('hidden');
+      }
+    } finally {
+      if (verifyBtn) {
+        verifyBtn.disabled = false;
+        verifyBtn.textContent = 'Verify & Enter Portal';
+      }
     }
   });
 
@@ -961,7 +1180,7 @@
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-owner-pin': state.ownerPin,
+        'x-admin-token': state.adminToken,
       },
       body: JSON.stringify({
         ownerEmail: $('#cfgEmail').value.trim(),
