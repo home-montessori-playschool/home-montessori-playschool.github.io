@@ -17,7 +17,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="./styles.css?v=20261116-v4" />
+  <link rel="stylesheet" href="./styles.css?v=20261116-video" />
 </head>
 <body>
   <!-- Top Live Availability & Trust Bar -->
@@ -102,6 +102,9 @@
             <a href="#connect" class="btn btn--secondary btn--lg" data-switch-tab="inquiry">
               Schedule a Tour / Send Inquiry
             </a>
+            <button type="button" class="btn btn--outline btn--lg" id="heroWatchVideoBtn">
+              ▶ Watch Miss Leah’s Video Tour
+            </button>
           </div>
 
           <div class="hero__metrics">
@@ -980,6 +983,69 @@
     </div>
   </div>
 
-  <script src="./app.js?v=20261116-v4"></script>
+  <!-- Small Floating Video Bubble (Narrated by Miss Leah) -->
+  <div class="video-bubble-wrap" id="videoBubbleWrap" aria-label="Floating Classroom Video Tour">
+    <button type="button" class="video-bubble__dismiss" id="dismissBubbleBtn" aria-label="Minimize video bubble" title="Minimize">✕</button>
+    <button type="button" class="video-bubble" id="openVideoBubbleBtn" aria-label="Watch Classroom Intro Video Narrated by Miss Leah">
+      <span class="video-bubble__ring" aria-hidden="true"></span>
+      <video
+        class="video-bubble__preview"
+        src="./miss-leah-tour.mp4"
+        poster="https://winnie.imgix.net/324a7eb4-8c5b-41ce-87f6-499166b5afd4?w=480&auto=compress%2Cformat"
+        muted
+        loop
+        playsinline
+        autoplay
+        preload="metadata"
+      ></video>
+      <span class="video-bubble__play" aria-hidden="true">▶</span>
+    </button>
+    <button type="button" class="video-bubble__label" id="openVideoLabelBtn">
+      <strong>👋 Tour w/ Miss Leah</strong>
+      <span>Click to watch &amp; listen</span>
+    </button>
+  </div>
+
+  <!-- Minimized Pill to Re-open Video Bubble Anytime -->
+  <button type="button" class="video-restore-pill hidden" id="videoRestorePill">
+    ▶ Watch Miss Leah’s Tour
+  </button>
+
+  <!-- Expanded Narrated Video Player Modal -->
+  <div class="modal-backdrop hidden" id="videoTourModal" role="dialog" aria-modal="true" aria-labelledby="videoTourTitle">
+    <div class="modal-card video-modal-card">
+      <div class="modal-card__header">
+        <div>
+          <span class="section-kicker">🎙️ Narrated by Miss Leah</span>
+          <h3 id="videoTourTitle">Welcome to Home Montessori Play-School</h3>
+        </div>
+        <button type="button" class="modal-close" id="closeVideoModalBtn" aria-label="Close video">✕</button>
+      </div>
+
+      <div class="video-player-frame">
+        <video
+          id="fullTourVideo"
+          controls
+          playsinline
+          preload="metadata"
+          poster="https://winnie.imgix.net/324a7eb4-8c5b-41ce-87f6-499166b5afd4?w=1024&auto=compress%2Cformat"
+        >
+          <source src="./miss-leah-tour.mp4" type="video/mp4" />
+          <track label="English" kind="subtitles" srclang="en" src="./miss-leah-tour.vtt" default />
+          Your browser does not support HTML5 video.
+        </video>
+      </div>
+
+      <div class="video-modal__footer">
+        <p>Ages 4 Months – 4 Years · Oak Grove Manor, Burlingame · Weekday Tours 4:30 PM – 5:00 PM Only</p>
+        <div class="video-modal__actions">
+          <button type="button" class="btn btn--secondary btn--sm" id="videoBookTourBtn">Book a 4:30 PM Tour</button>
+          <button type="button" class="btn btn--primary btn--sm" id="videoEnrollBtn">Start Enrollment</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="./app.js?v=20261116-video"></script>
 </body>
 </html>

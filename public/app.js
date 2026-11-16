@@ -979,6 +979,121 @@
     }
   });
 
+  // Floating Video Bubble & Narrated Video Tour Modal
+  const videoBubbleWrap = $('#videoBubbleWrap');
+  const videoRestorePill = $('#videoRestorePill');
+  const videoTourModal = $('#videoTourModal');
+  const fullTourVideo = $('#fullTourVideo');
+  let bubbleWasDragged = false;
+
+  function openVideoTour() {
+    if (bubbleWasDragged) return;
+    if (!videoTourModal) return;
+    videoTourModal.classList.remove('hidden');
+    if (fullTourVideo) {
+      fullTourVideo.muted = false;
+      fullTourVideo.volume = 1;
+      fullTourVideo.currentTime = 0;
+      fullTourVideo.play().catch(() => {});
+    }
+  }
+
+  function closeVideoTour() {
+    if (!videoTourModal) return;
+    videoTourModal.classList.add('hidden');
+    if (fullTourVideo) {
+      fullTourVideo.pause();
+    }
+  }
+
+  $('#openVideoBubbleBtn')?.addEventListener('click', openVideoTour);
+  $('#openVideoLabelBtn')?.addEventListener('click', openVideoTour);
+  $('#heroWatchVideoBtn')?.addEventListener('click', openVideoTour);
+  $('#closeVideoModalBtn')?.addEventListener('click', closeVideoTour);
+
+  videoTourModal?.addEventListener('click', e => {
+    if (e.target === videoTourModal) closeVideoTour();
+  });
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && videoTourModal && !videoTourModal.classList.contains('hidden')) {
+      closeVideoTour();
+    }
+  });
+
+  $('#dismissBubbleBtn')?.addEventListener('click', e => {
+    e.stopPropagation();
+    videoBubbleWrap?.classList.add('hidden');
+    videoRestorePill?.classList.remove('hidden');
+  });
+
+  videoRestorePill?.addEventListener('click', () => {
+    videoRestorePill.classList.add('hidden');
+    videoBubbleWrap?.classList.remove('hidden');
+    openVideoTour();
+  });
+
+  $('#videoBookTourBtn')?.addEventListener('click', () => {
+    closeVideoTour();
+    const select = $('#inqType');
+    if (select) {
+      select.value = 'Schedule an In-Person Tour';
+      select.dispatchEvent(new Event('change'));
+    }
+    switchConnectTab('inquiry', true);
+  });
+
+  $('#videoEnrollBtn')?.addEventListener('click', () => {
+    closeVideoTour();
+    switchConnectTab('enroll', true);
+  });
+
+  // Allow dragging the floating video bubble anywhere on screen
+  if (videoBubbleWrap) {
+    let dragging = false;
+    let startX = 0;
+    let startY = 0;
+    let origLeft = 0;
+    let origTop = 0;
+
+    videoBubbleWrap.addEventListener('pointerdown', e => {
+      if (e.target.closest('#dismissBubbleBtn')) return;
+      dragging = true;
+      bubbleWasDragged = false;
+      const rect = videoBubbleWrap.getBoundingClientRect();
+      startX = e.clientX;
+      startY = e.clientY;
+      origLeft = rect.left;
+      origTop = rect.top;
+    });
+
+    window.addEventListener('pointermove', e => {
+      if (!dragging) return;
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+      if (Math.hypot(dx, dy) > 8) {
+        bubbleWasDragged = true;
+        videoBubbleWrap.classList.add('dragging');
+        const maxLeft = window.innerWidth - videoBubbleWrap.offsetWidth - 8;
+        const maxTop = window.innerHeight - videoBubbleWrap.offsetHeight - 8;
+        const nextLeft = Math.max(8, Math.min(maxLeft, origLeft + dx));
+        const nextTop = Math.max(8, Math.min(maxTop, origTop + dy));
+        videoBubbleWrap.style.left = `${nextLeft}px`;
+        videoBubbleWrap.style.top = `${nextTop}px`;
+        videoBubbleWrap.style.right = 'auto';
+        videoBubbleWrap.style.bottom = 'auto';
+      }
+    });
+
+    window.addEventListener('pointerup', () => {
+      if (!dragging) return;
+      dragging = false;
+      setTimeout(() => {
+        bubbleWasDragged = false;
+      }, 60);
+    });
+  }
+
   // Set helpful default minimum date on date inputs (except DOB)
   const todayStr = new Date().toISOString().split('T')[0];
   if ($('#inqTourDate')) $('#inqTourDate').min = todayStr;
