@@ -1,10 +1,11 @@
 (() => {
   const DEFAULT_CONFIG = {
-    configVersion: 4,
+    configVersion: 5,
     businessName: 'Home Montessori Play-School',
     ownerEmail: 'homemontessorischool.missleah@gmail.com',
     emailConfigured: true,
     phone: '415-290-4736',
+    address: '533 Rollins Rd, Burlingame, CA 94010',
     openingsNow: true,
     openingsBanner: 'Openings Now — Enrolling Infants, Toddlers & Preschoolers (Ages 4 Mos – 4 Yrs)',
     tuitionFullTime: 2650,
