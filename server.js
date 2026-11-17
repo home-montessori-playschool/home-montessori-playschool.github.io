@@ -68,8 +68,6 @@ async function ensureDataFiles() {
         agesServed: '4 Months – 4 Years',
         openingsNow: true,
         openingsBanner: 'Openings Now — Enrolling Infants, Toddlers & Preschoolers (Ages 4 Mos – 4 Yrs)',
-        tuitionFullTime: 2650,
-        tuitionPartTime: 2000,
       } : [];
       await fs.writeFile(filePath, JSON.stringify(initial, null, 2), 'utf8');
     }

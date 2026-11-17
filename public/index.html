@@ -41,7 +41,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="./styles.css?v=20261116-clean" />
+  <link rel="stylesheet" href="./styles.css?v=20261117-notuition" />
 </head>
 <body>
   <!-- Top Live Availability & Trust Bar -->
@@ -86,7 +86,7 @@
 
       <nav class="nav-links" id="navLinks">
         <a href="#about">Our Philosophy</a>
-        <a href="#programs">Programs &amp; Tuition</a>
+        <a href="#programs">Programs</a>
         <a href="#rhythm">Daily Rhythm</a>
         <a href="#gallery">Classroom</a>
         <a href="#reviews">Reviews</a>
@@ -250,14 +250,14 @@
       </div>
     </section>
 
-    <!-- Programs & Transparent Tuition -->
+    <!-- Programs & Schedules -->
     <section class="section" id="programs">
       <div class="container">
         <div class="section-header">
-          <span class="section-kicker">Programs &amp; Transparent Tuition</span>
+          <span class="section-kicker">Programs &amp; Schedules</span>
           <h2>Flexible schedules designed around growing families.</h2>
           <p>
-            Open Monday through Friday, <strong>8:30 AM – 4:30 PM</strong>, on a full-year calendar in Oak Grove Manor, Burlingame. In-person tours are available from <strong>4:30 PM – 5:00 PM only</strong>.
+            Open Monday through Friday, <strong>8:30 AM – 4:30 PM</strong>, on a full-year calendar in Oak Grove Manor, Burlingame. Send an inquiry below to receive tuition details, or schedule an in-person tour (<strong>4:30 PM – 5:00 PM only</strong>).
           </p>
         </div>
 
@@ -267,9 +267,8 @@
             <div class="program-card__badge">Most Popular · Openings Now</div>
             <h3>Full-Time Montessori &amp; Care</h3>
             <p class="program-card__ages">Ages 4 Months – 4 Years · Monday – Friday</p>
-            <div class="program-card__price">
-              <strong id="tuitionFullDisplay">$2,650</strong>
-              <span>/ month</span>
+            <div class="program-card__price program-card__price--inquire">
+              <strong>Tuition Provided Upon Inquiry</strong>
             </div>
             <ul class="program-card__list">
               <li>Full weekday schedule: 8:30 AM – 4:30 PM</li>
@@ -278,8 +277,8 @@
               <li>Individualized infant naps, bottle schedules &amp; potty training</li>
               <li>English &amp; Tagalog immersion, yoga, art, cooking &amp; park outings</li>
             </ul>
-            <button type="button" class="btn btn--primary btn--block" data-enroll-program="Full-Time Montessori ($2,650/mo)">
-              Apply for Full-Time Enrollment
+            <button type="button" class="btn btn--primary btn--block" data-inquire-program="Tuition &amp; Part-Time Schedule">
+              Inquire for Full-Time Tuition
             </button>
           </article>
 
@@ -288,9 +287,8 @@
             <div class="program-card__badge program-card__badge--soft">Flexible Weekly Rhythm</div>
             <h3>Part-Time Montessori Program</h3>
             <p class="program-card__ages">Ages 4 Months – 4 Years · Selected Weekdays</p>
-            <div class="program-card__price">
-              <strong id="tuitionPartDisplay">$2,000</strong>
-              <span>/ month</span>
+            <div class="program-card__price program-card__price--inquire">
+              <strong>Tuition Provided Upon Inquiry</strong>
             </div>
             <ul class="program-card__list">
               <li>Consistent weekly part-time schedule</li>
@@ -299,8 +297,8 @@
               <li>Breakfast &amp; healthy snacks provided (parents pack child’s preferred lunch)</li>
               <li>Regular parent updates &amp; developmental milestone support</li>
             </ul>
-            <button type="button" class="btn btn--secondary btn--block" data-enroll-program="Part-Time Montessori ($2,000/mo)">
-              Apply for Part-Time Enrollment
+            <button type="button" class="btn btn--secondary btn--block" data-inquire-program="Tuition &amp; Part-Time Schedule">
+              Inquire for Part-Time Tuition
             </button>
           </article>
 
@@ -309,9 +307,8 @@
             <div class="program-card__badge program-card__badge--soft">Supplemental Care</div>
             <h3>After Care &amp; Drop-In Care</h3>
             <p class="program-card__ages">Ages 4 Months – 4 Years · Space Permitting</p>
-            <div class="program-card__price">
-              <strong>Custom</strong>
-              <span>by schedule</span>
+            <div class="program-card__price program-card__price--inquire">
+              <strong>Rates Provided Upon Inquiry</strong>
             </div>
             <ul class="program-card__list">
               <li><strong>After Care Program:</strong> Enriching afternoon Montessori activities, snack &amp; outdoor play</li>
@@ -698,10 +695,10 @@
 
                   <div class="form-row form-row--2">
                     <div class="form-group">
-                      <label for="enrProgram">Select Program &amp; Tuition Tier *</label>
+                      <label for="enrProgram">Select Program &amp; Schedule *</label>
                       <select id="enrProgram" name="program" required>
-                        <option value="Full-Time Montessori ($2,650/mo)">Full-Time Montessori — $2,650 / month (Mon–Fri, 8:30–4:30)</option>
-                        <option value="Part-Time Montessori ($2,000/mo)">Part-Time Montessori — $2,000 / month (Selected Days)</option>
+                        <option value="Full-Time Montessori (Mon–Fri, 8:30–4:30)">Full-Time Montessori (Mon–Fri, 8:30 AM – 4:30 PM)</option>
+                        <option value="Part-Time Montessori (Selected Days)">Part-Time Montessori (Selected Weekdays)</option>
                         <option value="After Care Program">After Care Program (Ages 4 mos – 4 yrs)</option>
                         <option value="Drop-In Care Program">Drop-In Care Registration (Ages 4 mos – 4 yrs)</option>
                       </select>
@@ -962,7 +959,7 @@
       </div>
       <div class="footer__links">
         <a href="#about">Our Philosophy</a>
-        <a href="#programs">Programs &amp; Tuition</a>
+        <a href="#programs">Programs</a>
         <a href="#rhythm">Daily Rhythm</a>
         <a href="#reviews">5.0★ Reviews</a>
         <a href="#connect" data-switch-tab="enroll">Enroll Online</a>
@@ -1049,24 +1046,14 @@
         <form id="ownerSettingsForm" class="admin-settings-box modern-form">
           <h4>Destination Email &amp; Live Website Settings</h4>
           <p class="small-muted">All parent inquiries and enrollment applications are sent directly to the email address below.</p>
-          <div class="form-row form-row--2">
+          <div class="form-row form-row--3">
             <div class="form-group">
               <label for="cfgEmail">Your Business Email Address *</label>
               <input type="email" id="cfgEmail" required placeholder="yourname@gmail.com" />
             </div>
             <div class="form-group">
-              <label for="cfgPhone">Public Phone Number (Optional)</label>
-              <input type="tel" id="cfgPhone" placeholder="Leave blank to keep private" />
-            </div>
-          </div>
-          <div class="form-row form-row--3">
-            <div class="form-group">
-              <label for="cfgFullTuition">Full-Time Monthly ($)</label>
-              <input type="number" id="cfgFullTuition" required />
-            </div>
-            <div class="form-group">
-              <label for="cfgPartTuition">Part-Time Monthly ($)</label>
-              <input type="number" id="cfgPartTuition" required />
+              <label for="cfgPhone">Public Phone Number</label>
+              <input type="tel" id="cfgPhone" placeholder="415-290-4736" />
             </div>
             <div class="form-group">
               <label for="cfgOpenings">Enrollment Status</label>
@@ -1165,6 +1152,6 @@
     </div>
   </div>
 
-  <script src="./app.js?v=20261116-clean"></script>
+  <script src="./app.js?v=20261117-notuition"></script>
 </body>
 </html>

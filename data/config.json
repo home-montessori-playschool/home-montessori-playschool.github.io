@@ -1,5 +1,5 @@
 {
-  "configVersion": 5,
+  "configVersion": 6,
   "businessName": "Home Montessori Play-School",
   "directorName": "Miss Leah",
   "ownerEmail": "homemontessorischool.missleah@gmail.com",
@@ -16,7 +16,5 @@
   "tourHours": "Monday – Friday · 4:30 PM – 5:00 PM Only",
   "agesServed": "4 Months – 4 Years",
   "openingsNow": true,
-  "openingsBanner": "Openings Now — Enrolling Infants, Toddlers & Preschoolers (Ages 4 Mos – 4 Yrs)",
-  "tuitionFullTime": 2650,
-  "tuitionPartTime": 2000
+  "openingsBanner": "Openings Now — Enrolling Infants, Toddlers & Preschoolers (Ages 4 Mos – 4 Yrs)"
 }

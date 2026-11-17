@@ -5,7 +5,7 @@ A modern, mobile-responsive website and client portal tailored for **Home Montes
 ## Features
 - **Brand Story, Daily Rhythm & Classroom Gallery:** Showcases Miss Leah's 14-area Montessori & play-based curriculum, small 4–6 child community, homemade meals, multilingual English/Tagalog environment, and verified 5.0-star parent reviews.
 - **Direct Email Inquiry & Tour Request Form:** Parents can book morning/afternoon tours or ask questions directly without third-party listing middlemen.
-- **4-Step Online Child Enrollment Application:** Structured enrollment wizard collecting child details, program tier (`$2,650/mo` Full-Time, `$2,000/mo` Part-Time, After Care, Drop-In), family/emergency contacts, allergies, feeding/nap schedules, and potty-training stage—with printable receipts.
+- **4-Step Online Child Enrollment Application:** Structured enrollment wizard collecting child details, program schedule (Full-Time, Part-Time, After Care, Drop-In), family/emergency contacts, allergies, feeding/nap schedules, and potty-training stage—with printable receipts.
 - **New Family Account Registration & Portal:** Prospective and current families can register an account, auto-fill forms, and track submitted inquiries and enrollment applications.
 - **Owner Portal & Email Settings:** Click **Owner Portal & Email Settings** in the website footer—protected by a single-use **6-digit one-time security PIN** emailed exclusively to Miss Leah (`homemontessorischool.missleah@gmail.com`) every time the portal is opened.
 

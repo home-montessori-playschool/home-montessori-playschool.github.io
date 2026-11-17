@@ -1,6 +1,6 @@
 (() => {
   const DEFAULT_CONFIG = {
-    configVersion: 5,
+    configVersion: 6,
     businessName: 'Home Montessori Play-School',
     ownerEmail: 'homemontessorischool.missleah@gmail.com',
     emailConfigured: true,
@@ -8,8 +8,6 @@
     address: '533 Rollins Rd, Burlingame, CA 94010',
     openingsNow: true,
     openingsBanner: 'Openings Now — Enrolling Infants, Toddlers & Preschoolers (Ages 4 Mos – 4 Yrs)',
-    tuitionFullTime: 2650,
-    tuitionPartTime: 2000,
   };
 
   const STORAGE_KEYS = {
@@ -324,8 +322,6 @@
           emailConfigured: Boolean(body.ownerEmail && String(body.ownerEmail).includes('@')),
           phone: String(body.phone ?? cfg.phone).trim(),
           openingsNow: body.openingsNow !== undefined ? Boolean(body.openingsNow) : cfg.openingsNow,
-          tuitionFullTime: Number(body.tuitionFullTime || cfg.tuitionFullTime),
-          tuitionPartTime: Number(body.tuitionPartTime || cfg.tuitionPartTime),
         };
         writeLocal(STORAGE_KEYS.config, updated);
         return { ok: true, config: updated };
@@ -377,21 +373,6 @@
       bannerEl.textContent = c.openingsNow
         ? (c.openingsBanner || 'Openings Now — Enrolling Infants, Toddlers & Preschoolers')
         : 'Currently Full — Accepting Waitlist Registrations & Tours';
-    }
-
-    const fullEl = $('#tuitionFullDisplay');
-    const partEl = $('#tuitionPartDisplay');
-    if (fullEl) fullEl.textContent = formatCurrency(c.tuitionFullTime);
-    if (partEl) partEl.textContent = formatCurrency(c.tuitionPartTime);
-
-    const enrSelect = $('#enrProgram');
-    if (enrSelect && enrSelect.options.length >= 2) {
-      const ftFmt = formatCurrency(c.tuitionFullTime);
-      const ptFmt = formatCurrency(c.tuitionPartTime);
-      enrSelect.options[0].value = `Full-Time Montessori (${ftFmt}/mo)`;
-      enrSelect.options[0].textContent = `Full-Time Montessori — ${ftFmt} / month (Mon–Fri, 8:30–4:30)`;
-      enrSelect.options[1].value = `Part-Time Montessori (${ptFmt}/mo)`;
-      enrSelect.options[1].textContent = `Part-Time Montessori — ${ptFmt} / month (Selected Days)`;
     }
 
     const emailLink = $('#directEmailLink');
@@ -1068,8 +1049,6 @@
 
     $('#cfgEmail').value = data.config.ownerEmail || '';
     $('#cfgPhone').value = data.config.phone || '';
-    $('#cfgFullTuition').value = data.config.tuitionFullTime || 2650;
-    $('#cfgPartTuition').value = data.config.tuitionPartTime || 2000;
     $('#cfgOpenings').value = String(Boolean(data.config.openingsNow));
 
     $('#adminStats').innerHTML = `
@@ -1185,8 +1164,6 @@
       body: JSON.stringify({
         ownerEmail: $('#cfgEmail').value.trim(),
         phone: $('#cfgPhone').value.trim(),
-        tuitionFullTime: Number($('#cfgFullTuition').value),
-        tuitionPartTime: Number($('#cfgPartTuition').value),
         openingsNow: $('#cfgOpenings').value === 'true',
       }),
     });
